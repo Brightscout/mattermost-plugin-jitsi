@@ -37,6 +37,11 @@ type StartMeetingFromAction struct {
 	} `json:"context"`
 }
 
+type StatusParams struct {
+	UserID string `json:"user_id"`
+	Status string `json:"status"`
+}
+
 func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	switch path := r.URL.Path; path {
 	case "/api/v1/meetings/enrich":
@@ -47,9 +52,22 @@ func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Req
 		p.handleConfig(w, r)
 	case "/jitsi_meet_external_api.js":
 		p.handleExternalAPIjs(w, r)
+	case "/api/v4/users/status":
+		p.changeUserStatus(w, r)
 	default:
 		http.NotFound(w, r)
 	}
+}
+
+func (p *Plugin) changeUserStatus(w http.ResponseWriter, r *http.Request) {
+	var req StatusParams
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		mlog.Debug("Unable to read change user status request body", mlog.Err(err))
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	p.API.UpdateUserStatus(req.UserID, req.Status)
 }
 
 func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {

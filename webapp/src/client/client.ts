@@ -19,7 +19,7 @@ export default class Client {
     }
 
     setUserStatus = async (userId: string | null, status: string) => {
-        return this.doPut(`${this.url}/api/v4/users/${userId}/status`, {user_id: userId, status});
+        return this.doPut(`${this.url}/api/v4/users/status`, {user_id: userId, status});
     }
 
     loadConfig = async () => {
