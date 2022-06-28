@@ -134,7 +134,7 @@ export default class Conference extends React.PureComponent<Props, State> {
             const vh = this.getViewportHeight();
             const iframe = this.api.getIFrame();
             iframe.style.width = this.state.minimized ? MINIMIZED_WIDTH + 'px' : vw + 'px';
-            iframe.style.height = this.state.minimized ? MINIMIZED_HEIGHT + 'px' : vh + 'px';
+            iframe.style.height = this.state.minimized ? 'calc(100vh - 60px)' : vh + 'px';
         }
     }
 
@@ -335,7 +335,8 @@ export default class Conference extends React.PureComponent<Props, State> {
         const vw = this.getViewportWidth();
         const width = this.state.minimized ? MINIMIZED_WIDTH : vw;
         const vh = this.getViewportHeight();
-        const height = this.state.minimized ? MINIMIZED_HEIGHT : vh;
+        // const height = this.state.minimized ? MINIMIZED_HEIGHT : vh;
+        const height = this.state.minimized ? 'calc(100vh - 60px)' : vh + 'px';
         const style = getStyle(height, width, this.state.position);
         return (
             <React.Fragment>
@@ -358,7 +359,7 @@ export default class Conference extends React.PureComponent<Props, State> {
     }
 }
 
-function getStyle(height: number, width: number, position: 'top' | 'bottom'): { [key: string]: React.CSSProperties } {
+function getStyle(height: string, width: number, position: 'top' | 'bottom'): { [key: string]: React.CSSProperties } {
     const backgroundZIndex = 1000;
     const jitsiZIndex = 1100;
     const buttonsZIndex = 1200;
@@ -406,14 +407,14 @@ function getStyle(height: number, width: number, position: 'top' | 'bottom'): { 
         },
         buttons: {
             position: 'absolute',
-            bottom: position === POSITION_BOTTOM ? ((height - BORDER_SIZE) - BUTTONS_PADDING_TOP) + 'px' : '',
+            bottom: position === POSITION_BOTTOM ? `calc((${height} - ${BORDER_SIZE + BUTTONS_PADDING_TOP}px)` : '',
             top: position === POSITION_TOP ? `${BORDER_SIZE}px` : '',
             right: `${BORDER_SIZE + BUTTONS_PADDING_RIGHT}px`,
             color: 'white',
             fontSize: '18px',
             cursor: 'pointer',
             opacity: 0.85,
-            zIndex: buttonsZIndex
+            zIndex: buttonsZIndex,
         }
     };
 }
