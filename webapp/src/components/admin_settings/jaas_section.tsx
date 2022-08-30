@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
 import {InputElementType, InputTypes} from 'types';
@@ -20,7 +20,7 @@ type Props = {
 };
 
 const JaaSSection = ({disabled, onApiKeyIDChange, onAppIDChange, onPrivateKeyChange, onEmbeddedChange, onCompatibilityChange, apiKey, appID, privateKey, embedded, compatibilityMode}: Props) => {
-    const EMBED_JAAS_VIDEO_INSIDE_MATTERMOST_OPTIONS = useMemo(() => [
+    const EMBED_JAAS_VIDEO_INSIDE_MATTERMOST_OPTIONS = [
         {
             value: 'true',
             checked: embedded,
@@ -41,9 +41,9 @@ const JaaSSection = ({disabled, onApiKeyIDChange, onAppIDChange, onPrivateKeyCha
                 />
             )
         }
-    ], [embedded]);
+    ];
 
-    const JAAS_COMPATIBILITY_OPTIONS = useMemo(() => [
+    const JAAS_COMPATIBILITY_OPTIONS = [
         {
             value: 'true',
             checked: compatibilityMode,
@@ -64,7 +64,7 @@ const JaaSSection = ({disabled, onApiKeyIDChange, onAppIDChange, onPrivateKeyCha
                 />
             )
         }
-    ], [compatibilityMode]);
+    ];
 
     return (
         <div>
@@ -88,7 +88,7 @@ const JaaSSection = ({disabled, onApiKeyIDChange, onAppIDChange, onPrivateKeyCha
             <RadioField
                 heading={
                     <FormattedMessage
-                        id='jaas.enable-compatibility-mod'
+                        id='jaas.enable-compatibility-mode'
                         defaultMessage={'Enable Compatibility Mode:'}
                     />
                 }

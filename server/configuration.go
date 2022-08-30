@@ -49,13 +49,6 @@ const public8x8vcURL = "https://8x8.vc"
 
 // GetJitsiURL return the currently configured JitsiURL or the URL from the
 // public servers provided by Jitsi.
-func (c *configuration) GetJitsiURL() string {
-	if len(c.JitsiSettings.JitsiURL) > 0 {
-		return c.JitsiSettings.JitsiURL
-	}
-	return publicJitsiServerURL
-}
-
 func (j *jitsisettings) GetJitsiURL() string {
 	if len(j.JitsiURL) > 0 {
 		return j.JitsiURL
@@ -63,7 +56,7 @@ func (j *jitsisettings) GetJitsiURL() string {
 	return publicJitsiServerURL
 }
 
-func (c *configuration) GetDefaultJitsiURL() string {
+func (j *jitsisettings) GetDefaultJitsiURL() string {
 	return publicJitsiServerURL
 }
 
@@ -79,43 +72,6 @@ func (c *configuration) Clone() *configuration {
 }
 
 // IsValid checks if all needed fields are set.
-func (c *configuration) IsValid() error {
-	if len(c.JitsiSettings.JitsiURL) > 0 {
-		_, err := url.Parse(c.JitsiSettings.JitsiURL)
-		if err != nil {
-			return fmt.Errorf("error invalid jitsiURL")
-		}
-	}
-
-	if c.JitsiSettings.JitsiJWT {
-		if len(c.JitsiSettings.JitsiAppID) == 0 {
-			return fmt.Errorf("error no Jitsi app ID was provided to use with JWT")
-		}
-		if len(c.JitsiSettings.JitsiAppSecret) == 0 {
-			return fmt.Errorf("error no Jitsi app secret provided to use with JWT")
-		}
-		if c.JitsiSettings.JitsiLinkValidTime < 1 {
-			c.JitsiSettings.JitsiLinkValidTime = 30
-		}
-	}
-
-	if c.JitsiSettings.UseJaaS {
-		if len(c.JitsiSettings.JaaSApiKey) == 0 {
-			return fmt.Errorf("error no JaaS Api Key was provided for JaaS")
-		}
-
-		if len(c.JitsiSettings.JaaSAppID) == 0 {
-			return fmt.Errorf("error no JaaS AppID was provided for JaaS")
-		}
-
-		if len(c.JitsiSettings.JaaSPrivateKey) == 0 {
-			return fmt.Errorf("error no JaaS Private KEy was provided for JaaS")
-		}
-	}
-
-	return nil
-}
-
 func (j *jitsisettings) IsValid() error {
 	if len(j.JitsiURL) > 0 {
 		_, err := url.Parse(j.JitsiURL)

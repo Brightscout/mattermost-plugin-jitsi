@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
 import {InputElementType, InputTypes} from 'types';
@@ -33,7 +33,7 @@ export const JITSI_NAMING_SCHEME = {
 };
 
 const JitsiSection = ({onJitsiAppIDChange, onJitsiEmbeddedChange, onJitsiMeetingLinkExpChange, onJitsiMeetingNamesChange, onJitsiJwtAuthChange, onJitsiAppSecretChange, onJitsiCompatibilityChange, onJitsiURLChange, serverUrl, embedded, namingScheme, jwtEnabled, appID, appSecret, meetingLinkExpire, compatibilityMode}: Props) => {
-    const EMBED_JITSI_VIDEO_INSIDE_MATTERMOST_OPTIONS = useMemo(() => [
+    const EMBED_JITSI_VIDEO_INSIDE_MATTERMOST_OPTIONS = [
         {
             value: 'true',
             checked: embedded,
@@ -54,9 +54,9 @@ const JitsiSection = ({onJitsiAppIDChange, onJitsiEmbeddedChange, onJitsiMeeting
                 />
             )
         }
-    ], [embedded]);
+    ];
 
-    const JITSI_MEETING_NAMES_OPTIONS = useMemo(() => [
+    const JITSI_MEETING_NAMES_OPTIONS = [
         {
             value: JITSI_NAMING_SCHEME.WORDS,
             checked: namingScheme === JITSI_NAMING_SCHEME.WORDS,
@@ -97,9 +97,9 @@ const JitsiSection = ({onJitsiAppIDChange, onJitsiEmbeddedChange, onJitsiMeeting
                 />
             )
         }
-    ], [namingScheme]);
+    ];
 
-    const JITSI_USE_JWT_OPTIONS = useMemo(() => [
+    const JITSI_USE_JWT_OPTIONS = [
         {
             value: 'true',
             checked: jwtEnabled,
@@ -120,9 +120,9 @@ const JitsiSection = ({onJitsiAppIDChange, onJitsiEmbeddedChange, onJitsiMeeting
                 />
             )
         }
-    ], [jwtEnabled]);
+    ];
 
-    const JITSI_COMPATIBILITY_OPTIONS = useMemo(() => [
+    const JITSI_COMPATIBILITY_OPTIONS = [
         {
             value: 'true',
             checked: compatibilityMode,
@@ -143,7 +143,7 @@ const JitsiSection = ({onJitsiAppIDChange, onJitsiEmbeddedChange, onJitsiMeeting
                 />
             )
         }
-    ], [compatibilityMode]);
+    ];
 
     return (
         <div>

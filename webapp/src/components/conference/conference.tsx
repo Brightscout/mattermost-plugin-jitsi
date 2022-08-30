@@ -89,7 +89,7 @@ export default class Conference extends React.PureComponent<Props, State> {
 
         const url = new URL(post.props.meeting_link);
 
-        const noSSL = url.protocol === 'https:';
+        const ssl = url.protocol === 'https:';
 
         const domain = url.host;
         const options = {
@@ -97,7 +97,7 @@ export default class Conference extends React.PureComponent<Props, State> {
             width: this.state.minimized ? MINIMIZED_WIDTH : vw,
             height: this.state.minimized ? MINIMIZED_HEIGHT : vh,
             jwt: this.props.jwt,
-            noSSL,
+            ssl,
             parentNode: document.querySelector('#jitsiMeet'),
             onload: () => {
                 this.setState({loading: false});

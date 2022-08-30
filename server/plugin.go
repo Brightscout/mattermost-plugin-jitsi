@@ -38,6 +38,8 @@ const DefaultValidityOfMeetingLinkInMinutes = 120
 const typeUser = "user"
 const typeGuest = "guest"
 
+var jaasURLCheckRegExp = regexp.MustCompile(`(vpaas-magic-cookie-[a-f0-9]{32}\/.+)`)
+
 type Plugin struct {
 	plugin.MattermostPlugin
 
@@ -55,18 +57,10 @@ type Plugin struct {
 
 	botID string
 
-	jaasURLCheckRegExp *regexp.Regexp
-
 	router *mux.Router
 }
 
 func (p *Plugin) OnActivate() error {
-	var onceRegEx sync.Once
-	initRegExp := func() {
-		p.jaasURLCheckRegExp = regexp.MustCompile(`(vpaas-magic-cookie-[a-f0-9]{32}\/.+)`)
-	}
-	onceRegEx.Do(initRegExp)
-
 	config := p.getConfiguration()
 	if err := config.IsValid(); err != nil {
 		return err
@@ -112,7 +106,7 @@ func (p *Plugin) OnActivate() error {
 	return nil
 }
 
-func verifyJwtJaaS(jaasToken string) (*JaaSClaims, error) {
+func getJwtClaims(jaasToken string) (*JaaSClaims, error) {
 	newToken, err := jwt.ParseString(jaasToken)
 	if err != nil {
 		mlog.Error("Error parsing jaas jwt", mlog.Err(err))
@@ -184,8 +178,7 @@ func signClaimsJaaS(apiKeyJaaS string, privateKeyJaaS string, claimsJaaS *JaaSCl
 	}
 
 	if err != nil {
-		mlog.Error("Error parsing JaaS private key", mlog.Err(err))
-		return "", err
+		return "", errors.Wrap(err, "Error parsing JaaS private key")
 	}
 
 	success := false
@@ -193,7 +186,7 @@ func signClaimsJaaS(apiKeyJaaS string, privateKeyJaaS string, claimsJaaS *JaaSCl
 	privateKey, success = parsedKey.(*rsa.PrivateKey)
 	if !success {
 		mlog.Error("Error converting JaaS private Key", mlog.Err(err))
-		return "", err
+		return "", errors.New("error converting JaaS private Key")
 	}
 
 	signer, err := jwt.NewSignerRS(jwt.RS256, privateKey)
@@ -223,8 +216,8 @@ func (p *Plugin) trackMeeting(args *model.CommandArgs) {
 }
 
 func (p *Plugin) isNotDefaultJitsiURL() bool {
-	currentURL := p.configuration.GetJitsiURL()
-	defaultURL := p.configuration.GetDefaultJitsiURL()
+	currentURL := p.getConfiguration().GetJitsiURL()
+	defaultURL := p.getConfiguration().GetDefaultJitsiURL()
 	return currentURL != defaultURL
 }
 
@@ -236,34 +229,7 @@ func (p *Plugin) updateJwtUserInfo(jwtToken string, user *model.User) (string, e
 	sanitizedUser := user.DeepCopy()
 
 	if p.getConfiguration().UseJaaS {
-		claims, err := verifyJwtJaaS(jwtToken)
-		if err != nil {
-			return "", err
-		}
-
-		config := p.API.GetConfig()
-		if config.PrivacySettings.ShowFullName == nil || !*config.PrivacySettings.ShowFullName {
-			sanitizedUser.FirstName = ""
-			sanitizedUser.LastName = ""
-		}
-		if config.PrivacySettings.ShowEmailAddress == nil || !*config.PrivacySettings.ShowEmailAddress {
-			sanitizedUser.Email = ""
-		}
-
-		newContext := JaaSContext{
-			User: JaaSUser{
-				Avatar:    fmt.Sprintf("%s/api/v4/users/%s/image?_=%d", *config.ServiceSettings.SiteURL, sanitizedUser.Id, sanitizedUser.LastPictureUpdate),
-				Name:      sanitizedUser.GetDisplayName(model.SHOW_NICKNAME_FULLNAME),
-				Email:     sanitizedUser.Email,
-				ID:        sanitizedUser.Id,
-				Moderator: `true`,
-			},
-			Features: claims.Context.Features,
-		}
-
-		claims.Context = newContext
-
-		return signClaimsJaaS(p.getConfiguration().JaaSApiKey, p.getConfiguration().JaaSPrivateKey, claims)
+		return p.getSignClaimsJaaS(jwtToken, sanitizedUser)
 	}
 
 	secret := p.getConfiguration().JitsiAppSecret
@@ -294,6 +260,37 @@ func (p *Plugin) updateJwtUserInfo(jwtToken string, user *model.User) (string, e
 	claims.Context = newContext
 
 	return signClaims(secret, claims)
+}
+
+func (p *Plugin) getSignClaimsJaaS(jwtToken string, sanitizedUser *model.User) (string, error) {
+	claims, err := getJwtClaims(jwtToken)
+	if err != nil {
+		return "", err
+	}
+
+	config := p.API.GetConfig()
+	if config.PrivacySettings.ShowFullName == nil || !*config.PrivacySettings.ShowFullName {
+		sanitizedUser.FirstName = ""
+		sanitizedUser.LastName = ""
+	}
+	if config.PrivacySettings.ShowEmailAddress == nil || !*config.PrivacySettings.ShowEmailAddress {
+		sanitizedUser.Email = ""
+	}
+
+	newContext := JaaSContext{
+		User: JaaSUser{
+			Avatar:    fmt.Sprintf("%s/api/v4/users/%s/image?_=%d", *config.ServiceSettings.SiteURL, sanitizedUser.Id, sanitizedUser.LastPictureUpdate),
+			Name:      sanitizedUser.GetDisplayName(model.SHOW_NICKNAME_FULLNAME),
+			Email:     sanitizedUser.Email,
+			ID:        sanitizedUser.Id,
+			Moderator: `true`,
+		},
+		Features: claims.Context.Features,
+	}
+
+	claims.Context = newContext
+
+	return signClaimsJaaS(p.getConfiguration().JaaSApiKey, p.getConfiguration().JaaSPrivateKey, claims)
 }
 
 func (p *Plugin) setJWTClaims(user *model.User, userType string) (string, error) {
@@ -347,7 +344,7 @@ func (p *Plugin) generateJaaSJwtForGuest(userid string) (string, error) {
 
 func (p *Plugin) getJaaSSettings(jwtToken string, path string, user *model.User) (*JaaSSettings, error) {
 	if user != nil {
-		claims, err := verifyJwtJaaS(jwtToken)
+		claims, err := getJwtClaims(jwtToken)
 		if err != nil {
 			jwtToken, err = p.generateJaaSJwtForUser(user)
 			if err != nil {
@@ -366,17 +363,14 @@ func (p *Plugin) getJaaSSettings(jwtToken string, path string, user *model.User)
 		}
 	}
 
-	// Get room
-	roomPath := strings.ReplaceAll(path, "/plugins/jitsi/api/v1/meetings/", "")
-
 	var settings JaaSSettings
 	settings.Jwt = jwtToken
-	settings.Room = roomPath
+	settings.Room = path
 
 	return &settings, nil
 }
 
-func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingID string, meetingTopic string, personal bool, rootID string) (string, error) {
+func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingID string, meetingTopic string, rootID string) (string, error) {
 	l := p.b.GetServerLocalizer()
 	if meetingID == "" {
 		meetingID = encodeJitsiMeetingID(meetingTopic)
@@ -445,15 +439,7 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 		meetingID = appID + "/" + meetingID
 	}
 
-	jitsiURL := strings.TrimSpace(p.getConfiguration().GetJitsiURL())
-
-	if p.getConfiguration().UseJaaS {
-		jitsiURL = strings.TrimSpace(*p.API.GetConfig().ServiceSettings.SiteURL + "/plugins/jitsi/api/v1/meetings")
-	}
-
-	jitsiURL = strings.TrimRight(jitsiURL, "/")
-	meetingURL := jitsiURL + "/" + meetingID
-	meetingLink := meetingURL
+	var meetingURL string
 
 	var meetingLinkValidUntil = time.Time{}
 	JWTMeeting := p.getConfiguration().JitsiJWT || p.getConfiguration().UseJaaS
@@ -462,6 +448,8 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 	meetingUntil := ""
 
 	if p.getConfiguration().UseJaaS {
+		meetingURL = strings.TrimSpace(*p.API.GetConfig().ServiceSettings.SiteURL + "/plugins/jitsi/public/jaas/jaas.html")
+
 		meetingLinkValidUntil = time.Now().Add(time.Duration(DefaultValidityOfMeetingLinkInMinutes) * time.Minute)
 
 		var err2 error
@@ -470,7 +458,7 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 			return "", err2
 		}
 
-		meetingURL = meetingURL + "?jwt=" + jwtToken
+		meetingURL = meetingURL + "?meetingID=" + meetingID + "&jwt=" + jwtToken
 
 		meetingUntil = p.b.LocalizeWithConfig(l, &i18n.LocalizeConfig{
 			DefaultMessage: &i18n.Message{
@@ -480,6 +468,9 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 			TemplateData: map[string]string{"Datetime": meetingLinkValidUntil.Format("Mon Jan 2 15:04:05 -0700 MST 2006")},
 		})
 	} else {
+		jitsiURL := strings.TrimSpace(p.getConfiguration().GetJitsiURL())
+		jitsiURL = strings.TrimRight(jitsiURL, "/")
+		meetingURL = jitsiURL + "/" + meetingID
 		if JWTMeeting {
 			// Error check is done in configuration.IsValid()
 			jURL, _ := url.Parse(p.getConfiguration().GetJitsiURL())
@@ -575,7 +566,7 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 		Props: map[string]interface{}{
 			"attachments":             []*model.SlackAttachment{&slackAttachment},
 			"meeting_id":              meetingID,
-			"meeting_link":            meetingLink,
+			"meeting_link":            meetingURL,
 			"jwt_meeting":             JWTMeeting,
 			"meeting_jwt":             jwtToken,
 			"jwt_meeting_valid_until": meetingLinkValidUntil.Unix(),

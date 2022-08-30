@@ -154,7 +154,7 @@ export class PostTypeJitsi extends React.PureComponent<Props, State> {
                                     onClick={this.openJitsiMeeting}
                                     href={meetingLink}
                                 >
-                                    {props.meeting_id_label}
+                                    {props.meeting_id}
                                 </a>
                             </span>
                             <div>
