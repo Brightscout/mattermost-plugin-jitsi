@@ -3,6 +3,8 @@ import React from 'react';
 import {FormattedMessage} from 'react-intl';
 import {Post} from 'mattermost-redux/types/posts';
 import Constants from 'mattermost-redux/constants/general';
+import {checkMeetingAndServerType} from 'utils/user_utils';
+import constants from 'constants/constants';
 
 const BORDER_SIZE = 8;
 const POSITION_TOP = 'top';
@@ -15,11 +17,14 @@ const JAAS_DOMAIN = '8x8.vc';
 
 type Props = {
     currentUserId: string,
+    currentChannelId: string
     post: Post | null,
     jwt: string | null,
+    useJaas: Boolean
     actions: {
         openJitsiMeeting: (post: Post | null, jwt: string | null) => void
         setUserStatus: (userId: string, status: string) => void
+        sendEphemeralPost:(message: string, channelID: string, userID: string) => void
     }
 }
 
@@ -196,6 +201,14 @@ export default class Conference extends React.PureComponent<Props, State> {
         }
     }
 
+    openInNewTab = (meetingLink: string) => {
+        if (checkMeetingAndServerType(meetingLink, this.props.useJaas)) {
+            this.props.actions.sendEphemeralPost(constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUserId);
+        } else {
+            window.open(meetingLink, '_blank');
+        }
+    }
+
     minimize = () => {
         this.setState({minimized: true});
         if (this.state.isTileView) {
@@ -234,7 +247,6 @@ export default class Conference extends React.PureComponent<Props, State> {
             meetingLink += `?jwt=${this.props.jwt}`;
         }
         meetingLink += `#config.callDisplayName="${post.props.meeting_topic || post.props.default_meeting_topic}"`;
-
         return (
             <div style={style.buttons}>
                 {this.state.minimized && this.state.position === POSITION_TOP &&
@@ -295,27 +307,26 @@ export default class Conference extends React.PureComponent<Props, State> {
                             />
                         )}
                     </FormattedMessage>}
-                <a
-                    style={{color: 'white'}}
-                    onClick={this.close}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    href={meetingLink}
-                >
-                    <FormattedMessage
-                        id='jitsi.open-in-new-tab'
-                        defaultMessage='Open in new tab'
+                {
+                    <a
+                        style={{color: 'white'}}
+                        onClick={this.close}
                     >
-                        {(text: string) => (
-                            <i
-                                style={{transform: 'rotate(135deg)', display: 'inline-block'}}
-                                className='icon icon-arrow-left'
-                                aria-label={text}
-                                title={text}
-                            />
-                        )}
-                    </FormattedMessage>
-                </a>
+                        <FormattedMessage
+                            id='jitsi.open-in-new-tab'
+                            defaultMessage='Open in new tab'
+                        >
+                            {(text: string) => (
+                                <i
+                                    style={{transform: 'rotate(135deg)', display: 'inline-block'}}
+                                    className='icon icon-arrow-left'
+                                    aria-label={text}
+                                    title={text}
+                                    onClick={() => this.openInNewTab(meetingLink)}
+                                />
+                            )}
+                        </FormattedMessage>
+                    </a>}
                 <FormattedMessage
                     id='jitsi.close'
                     defaultMessage='Close'

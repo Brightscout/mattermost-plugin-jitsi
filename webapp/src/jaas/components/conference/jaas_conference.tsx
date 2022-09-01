@@ -1,6 +1,7 @@
 import React from 'react';
 import {id as pluginId} from '../../../manifest';
 import {StartMeetingWindowAction} from 'jaas/actions';
+import constants from '../../../constants/constants';
 
 type Props = {
     actions: {
@@ -15,7 +16,6 @@ type State = {
 
 const JWT = 'jwt';
 const JAAS_URL = '8x8.vc';
-const MEETING_ID = 'meetingID';
 
 export default class JaaSConference extends React.PureComponent<Props, State> {
     api: any;
@@ -47,7 +47,7 @@ export default class JaaSConference extends React.PureComponent<Props, State> {
             script.onload = () => {
                 const params = new URLSearchParams(window.location.search);
                 const jwt = params.get(JWT);
-                const meetingId = params.get(MEETING_ID);
+                const meetingId = params.get(constants.MEETING_ID);
                 this.props.actions.startJaaSMeetingWindow(jwt, meetingId).
                     then((response) => {
                         this.setState({

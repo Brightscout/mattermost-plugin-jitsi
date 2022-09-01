@@ -440,6 +440,7 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 	}
 
 	var meetingURL string
+	var meetingLink string
 
 	var meetingLinkValidUntil = time.Time{}
 	JWTMeeting := p.getConfiguration().JitsiJWT || p.getConfiguration().UseJaaS
@@ -449,6 +450,8 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 
 	if p.getConfiguration().UseJaaS {
 		meetingURL = strings.TrimSpace(*p.API.GetConfig().ServiceSettings.SiteURL + "/plugins/jitsi/public/jaas/jaas.html")
+		meetingURL = meetingURL + "?meetingID=" + meetingID
+		meetingLink = meetingURL
 
 		meetingLinkValidUntil = time.Now().Add(time.Duration(DefaultValidityOfMeetingLinkInMinutes) * time.Minute)
 
@@ -458,7 +461,7 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 			return "", err2
 		}
 
-		meetingURL = meetingURL + "?meetingID=" + meetingID + "&jwt=" + jwtToken
+		meetingURL = meetingURL + "&jwt=" + jwtToken
 
 		meetingUntil = p.b.LocalizeWithConfig(l, &i18n.LocalizeConfig{
 			DefaultMessage: &i18n.Message{
@@ -471,6 +474,7 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 		jitsiURL := strings.TrimSpace(p.getConfiguration().GetJitsiURL())
 		jitsiURL = strings.TrimRight(jitsiURL, "/")
 		meetingURL = jitsiURL + "/" + meetingID
+		meetingLink = meetingURL
 		if JWTMeeting {
 			// Error check is done in configuration.IsValid()
 			jURL, _ := url.Parse(p.getConfiguration().GetJitsiURL())
@@ -566,7 +570,7 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 		Props: map[string]interface{}{
 			"attachments":             []*model.SlackAttachment{&slackAttachment},
 			"meeting_id":              meetingID,
-			"meeting_link":            meetingURL,
+			"meeting_link":            meetingLink,
 			"jwt_meeting":             JWTMeeting,
 			"meeting_jwt":             jwtToken,
 			"jwt_meeting_valid_until": meetingLinkValidUntil.Unix(),
@@ -717,6 +721,7 @@ func (p *Plugin) getUserConfig(userID string) (*UserConfig, error) {
 		return &UserConfig{
 			Embedded:     p.getConfiguration().JitsiEmbedded,
 			NamingScheme: p.getConfiguration().JitsiNamingScheme,
+			UseJaas:      p.getConfiguration().UseJaaS,
 		}, nil
 	}
 

@@ -9,18 +9,23 @@ import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {makeStyleFromTheme} from 'mattermost-redux/utils/theme_utils';
 
 import Svgs from 'constants/svgs';
+import {checkMeetingAndServerType} from 'utils/user_utils';
+import constants from 'constants/constants';
 
 export type Props = {
     post?: Post,
     theme: Theme,
     currentUser: UserProfile,
+    currentChannelId:string,
     creatorName: string,
     useMilitaryTime: boolean,
     meetingEmbedded: boolean,
+    useJaas: boolean,
     actions: {
         enrichMeetingJwt: (jwt: string) => Promise<ActionResult>,
         openJitsiMeeting: (post: Post | null, jwt: string | null) => ActionResult,
         setUserStatus: (userId: string, status: string) => Promise<ActionResult>,
+        sendEphemeralPost: (message: string, channelID: string, userID: string)=> ActionResult,
     }
 }
 
@@ -47,7 +52,9 @@ export class PostTypeJitsi extends React.PureComponent<Props, State> {
     }
 
     openJitsiMeeting = (e: React.MouseEvent) => {
+        console.log("\n inside if openJitsiMeeting")
         if (this.props.meetingEmbedded) {
+            console.log("\n inside if openJitsiMeeting this.props.meetingEmbedded")
             e.preventDefault();
             if (this.props.post) {
                 // could be improved by using an enum in the future for the status
@@ -58,6 +65,12 @@ export class PostTypeJitsi extends React.PureComponent<Props, State> {
             e.preventDefault();
             if (this.props.post) {
                 const props = this.props.post.props;
+                console.log("\n inside if this.props.post")
+                if (checkMeetingAndServerType(props.meeting_link, this.props.useJaas)) {
+                    console.log("\n inside if this.props.post checkMeetingAndServerType")
+                    this.props.actions.sendEphemeralPost(constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUser.id);
+                    return;
+                }
                 let meetingLink = props.meeting_link + '?jwt=' + (this.state.meetingJwt);
                 meetingLink += `#config.callDisplayName="${props.meeting_topic || props.default_meeting_topic}"`;
                 window.open(meetingLink, '_blank');
