@@ -1,7 +1,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 import {GenericAction} from 'mattermost-redux/types/actions';
-import {getCurrentChannelId, getCurrentUserId} from 'mattermost-redux/selectors/entities/common';
+import {getCurrentChannelId, getCurrentUser, getCurrentUserId} from 'mattermost-redux/selectors/entities/common';
 
 import {GlobalState} from 'types';
 import {openJitsiMeeting, setUserStatus, sendEphemeralPost} from '../../actions';
@@ -10,7 +10,7 @@ import Conference from './conference';
 function mapStateToProps(state: GlobalState) {
     const config = state['plugins-jitsi'].config;
     return {
-        currentUserId: getCurrentUserId(state),
+        currentUser: getCurrentUser(state),
         currentChannelId: getCurrentChannelId(state),
         post: state['plugins-jitsi'].openMeeting,
         jwt: state['plugins-jitsi'].openMeetingJwt,

@@ -7,6 +7,7 @@ import Constants from 'mattermost-redux/constants/general';
 import {UserProfile} from 'mattermost-redux/types/users';
 import {getFullName} from 'mattermost-redux/utils/user_utils';
 import {makeStyleFromTheme} from 'mattermost-redux/utils/theme_utils';
+import {General as MMConstants} from 'mattermost-redux/constants';
 
 import Svgs from 'constants/svgs';
 import {checkMeetingAndServerType} from 'utils/user_utils';
@@ -64,10 +65,10 @@ export class PostTypeJitsi extends React.PureComponent<Props, State> {
             if (this.props.post) {
                 const props = this.props.post.props;
                 if (checkMeetingAndServerType(props.meeting_link, this.props.useJaas)) {
-                    this.props.actions.sendEphemeralPost(constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUser.id);
+                    this.props.actions.sendEphemeralPost(this.props.currentUser.roles.includes(MMConstants.SYSTEM_ADMIN_ROLE)?constants.JAAS_ADMIN_EPHEMERAL_MESSAGE:constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUser.id);
                     return;
                 }
-                let meetingLink = props.meeting_link + '?jwt=' + (this.state.meetingJwt);
+                let meetingLink=this.props.useJaas? props.meeting_link+'&jwt=' + (this.state.meetingJwt):props.meeting_link+'?jwt=' + (this.state.meetingJwt)
                 meetingLink += `#config.callDisplayName="${props.meeting_topic || props.default_meeting_topic}"`;
                 window.open(meetingLink, '_blank');
             }
