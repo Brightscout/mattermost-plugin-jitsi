@@ -52,9 +52,7 @@ export class PostTypeJitsi extends React.PureComponent<Props, State> {
     }
 
     openJitsiMeeting = (e: React.MouseEvent) => {
-        console.log("\n inside if openJitsiMeeting")
         if (this.props.meetingEmbedded) {
-            console.log("\n inside if openJitsiMeeting this.props.meetingEmbedded")
             e.preventDefault();
             if (this.props.post) {
                 // could be improved by using an enum in the future for the status
@@ -65,9 +63,7 @@ export class PostTypeJitsi extends React.PureComponent<Props, State> {
             e.preventDefault();
             if (this.props.post) {
                 const props = this.props.post.props;
-                console.log("\n inside if this.props.post")
                 if (checkMeetingAndServerType(props.meeting_link, this.props.useJaas)) {
-                    console.log("\n inside if this.props.post checkMeetingAndServerType")
                     this.props.actions.sendEphemeralPost(constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUser.id);
                     return;
                 }
