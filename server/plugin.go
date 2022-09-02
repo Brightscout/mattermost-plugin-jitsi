@@ -178,6 +178,7 @@ func signClaimsJaaS(apiKeyJaaS string, privateKeyJaaS string, claimsJaaS *JaaSCl
 	}
 
 	if err != nil {
+		mlog.Error("Error parsing JaaS private key", mlog.Err(err))
 		return "", errors.Wrap(err, "Error parsing JaaS private key")
 	}
 
