@@ -1,7 +1,7 @@
 import {connect} from 'react-redux';
 import {bindActionCreators, Dispatch} from 'redux';
 import {GenericAction} from 'mattermost-redux/types/actions';
-import {getCurrentChannelId, getCurrentUser, getCurrentUserId} from 'mattermost-redux/selectors/entities/common';
+import {getCurrentChannelId, getCurrentUser} from 'mattermost-redux/selectors/entities/common';
 
 import {GlobalState} from 'types';
 import {openJitsiMeeting, setUserStatus, sendEphemeralPost} from '../../actions';

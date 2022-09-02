@@ -6,7 +6,7 @@ import Constants from 'mattermost-redux/constants/general';
 import {General as MMConstants} from 'mattermost-redux/constants';
 import {checkMeetingAndServerType} from 'utils/user_utils';
 import constants from 'constants/constants';
-import { UserProfile } from 'mattermost-redux/types/users';
+import {UserProfile} from 'mattermost-redux/types/users';
 
 const BORDER_SIZE = 8;
 const POSITION_TOP = 'top';
@@ -96,15 +96,12 @@ export default class Conference extends React.PureComponent<Props, State> {
 
         const url = new URL(post.props.meeting_link);
 
-        const ssl = url.protocol === 'https:';
-
         const domain = url.host;
         const options = {
             roomName: post.props.meeting_id,
             width: this.state.minimized ? MINIMIZED_WIDTH : vw,
             height: this.state.minimized ? MINIMIZED_HEIGHT : vh,
             jwt: this.props.jwt,
-            ssl,
             parentNode: document.querySelector('#jitsiMeet'),
             onload: () => {
                 this.setState({loading: false});
@@ -205,7 +202,7 @@ export default class Conference extends React.PureComponent<Props, State> {
 
     openInNewTab = (meetingLink: string) => {
         if (checkMeetingAndServerType(meetingLink, this.props.useJaas)) {
-            this.props.actions.sendEphemeralPost(this.props.currentUser.roles.includes(MMConstants.SYSTEM_ADMIN_ROLE)?constants.JAAS_ADMIN_EPHEMERAL_MESSAGE:constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUser.id);
+            this.props.actions.sendEphemeralPost(this.props.currentUser.roles.includes(MMConstants.SYSTEM_ADMIN_ROLE) ? constants.JAAS_ADMIN_EPHEMERAL_MESSAGE : constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUser.id);
         } else {
             window.open(meetingLink, '_blank');
         }
@@ -246,7 +243,7 @@ export default class Conference extends React.PureComponent<Props, State> {
         }
         let meetingLink = post.props.meeting_link;
         if (this.props.jwt) {
-            meetingLink = this.props.useJaas?meetingLink+`&jwt=${this.props.jwt}`:meetingLink+`?jwt=${this.props.jwt}`;
+            meetingLink = this.props.useJaas ? meetingLink + `&jwt=${this.props.jwt}` : meetingLink + `?jwt=${this.props.jwt}`;
         }
         meetingLink += `#config.callDisplayName="${post.props.meeting_topic || post.props.default_meeting_topic}"`;
         return (
