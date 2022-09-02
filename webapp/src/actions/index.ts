@@ -119,10 +119,7 @@ export function sendEphemeralPost(message: string, channelID: string, userID: st
             message,
             type: 'system_ephemeral',
             create_at: timestamp,
-            update_at: timestamp,
-            root_id: '',
-            parent_id: '',
-            props: {}
+            update_at: timestamp
         };
         dispatch({
             type: PostTypes.RECEIVED_NEW_POST,
