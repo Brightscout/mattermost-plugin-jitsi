@@ -3,10 +3,8 @@ import React from 'react';
 import {FormattedMessage} from 'react-intl';
 import {Post} from 'mattermost-redux/types/posts';
 import Constants from 'mattermost-redux/constants/general';
-import {General as MMConstants} from 'mattermost-redux/constants';
-import {checkMeetingAndServerType} from 'utils/user_utils';
-import constants from 'constants/constants';
-import {UserProfile} from 'mattermost-redux/types/users';
+import {checkMeetingLinkServerType} from 'utils/user_utils';
+import constants from '../../constants';
 
 const BORDER_SIZE = 8;
 const POSITION_TOP = 'top';
@@ -18,11 +16,12 @@ const MINIMIZED_HEIGHT = 288;
 const JAAS_DOMAIN = '8x8.vc';
 
 type Props = {
-    currentUser: UserProfile,
+    currentUserId: string,
+    isCurrentUserSysAdmin: boolean,
     currentChannelId: string
     post: Post | null,
     jwt: string | null,
-    useJaas: Boolean
+    useJaas: boolean
     actions: {
         openJitsiMeeting: (post: Post | null, jwt: string | null) => void
         setUserStatus: (userId: string, status: string) => void
@@ -183,7 +182,7 @@ export default class Conference extends React.PureComponent<Props, State> {
             this.api.executeCommand('hangup');
             setTimeout(() => {
                 this.props.actions.openJitsiMeeting(null, null);
-                this.props.actions.setUserStatus(this.props.currentUser.id, Constants.ONLINE);
+                this.props.actions.setUserStatus(this.props.currentUserId, Constants.ONLINE);
                 this.setState({
                     minimized: true,
                     loading: true,
@@ -201,8 +200,8 @@ export default class Conference extends React.PureComponent<Props, State> {
     }
 
     openInNewTab = (meetingLink: string) => {
-        if (checkMeetingAndServerType(meetingLink, this.props.useJaas)) {
-            this.props.actions.sendEphemeralPost(this.props.currentUser.roles.includes(MMConstants.SYSTEM_ADMIN_ROLE) ? constants.JAAS_ADMIN_EPHEMERAL_MESSAGE : constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUser.id);
+        if (checkMeetingLinkServerType(meetingLink, this.props.useJaas)) {
+            this.props.actions.sendEphemeralPost(this.props.isCurrentUserSysAdmin ? constants.JAAS_ADMIN_EPHEMERAL_MESSAGE : constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUserId);
         } else {
             window.open(meetingLink, '_blank');
         }
@@ -306,26 +305,25 @@ export default class Conference extends React.PureComponent<Props, State> {
                             />
                         )}
                     </FormattedMessage>}
-                {
-                    <a
-                        style={{color: 'white'}}
-                        onClick={this.close}
+                <a
+                    style={{color: 'white'}}
+                    onClick={this.close}
+                >
+                    <FormattedMessage
+                        id='jitsi.open-in-new-tab'
+                        defaultMessage='Open in new tab'
                     >
-                        <FormattedMessage
-                            id='jitsi.open-in-new-tab'
-                            defaultMessage='Open in new tab'
-                        >
-                            {(text: string) => (
-                                <i
-                                    style={{transform: 'rotate(135deg)', display: 'inline-block'}}
-                                    className='icon icon-arrow-left'
-                                    aria-label={text}
-                                    title={text}
-                                    onClick={() => this.openInNewTab(meetingLink)}
-                                />
-                            )}
-                        </FormattedMessage>
-                    </a>}
+                        {(text: string) => (
+                            <i
+                                style={{transform: 'rotate(135deg)', display: 'inline-block'}}
+                                className='icon icon-arrow-left'
+                                aria-label={text}
+                                title={text}
+                                onClick={() => this.openInNewTab(meetingLink)}
+                            />
+                        )}
+                    </FormattedMessage>
+                </a>
                 <FormattedMessage
                     id='jitsi.close'
                     defaultMessage='Close'

@@ -472,8 +472,7 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 			TemplateData: map[string]string{"Datetime": meetingLinkValidUntil.Format("Mon Jan 2 15:04:05 -0700 MST 2006")},
 		})
 	} else {
-		jitsiURL := strings.TrimSpace(p.getConfiguration().GetJitsiURL())
-		jitsiURL = strings.TrimRight(jitsiURL, "/")
+		jitsiURL := strings.TrimRight(strings.TrimSpace(p.getConfiguration().GetJitsiURL()), "/")
 		meetingURL = jitsiURL + "/" + meetingID
 		meetingLink = meetingURL
 		if JWTMeeting {

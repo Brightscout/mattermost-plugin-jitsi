@@ -1,7 +1,7 @@
 import React from 'react';
 import {id as pluginId} from '../../../manifest';
 import {StartMeetingWindowAction} from 'jaas/actions';
-import constants from '../../../constants/constants';
+import constants from '../../../constants';
 
 type Props = {
     actions: {

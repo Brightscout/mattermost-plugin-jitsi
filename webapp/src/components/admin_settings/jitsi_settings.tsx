@@ -62,7 +62,6 @@ const JitsiSettings = ({id, value, disabled, config, onChange, setSaveNeeded}: P
     const selectedMode = value?.usejaas ? JAAS_MODE : JITSI_MODE;
 
     const configuration = config.PluginSettings.Plugins[pluginId];
-
     const selectedSettings = {
         jitsiurl: configuration.jitsiurl || DEFAULT_SETTINGS.jitsiurl,
         jitsiappsecret: configuration.jitsiappsecret || DEFAULT_SETTINGS.jitsiappsecret,

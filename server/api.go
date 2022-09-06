@@ -77,8 +77,7 @@ func (p *Plugin) handleJaaSSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var jaasSettingsFromAction JaaSSettingsFromAction
-	err := json.NewDecoder(r.Body).Decode(&jaasSettingsFromAction)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&jaasSettingsFromAction); err != nil {
 		mlog.Debug("Unable to decode the request content as start meeting request or start meeting action")
 		http.Error(w, "Unable to decode your request", http.StatusBadRequest)
 		return
@@ -125,7 +124,6 @@ func (p *Plugin) isJaaSMeeting(path string) bool {
 
 func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get(mattermostUserIDHeader)
-
 	if userID == "" {
 		http.Error(w, "Not authorized", http.StatusUnauthorized)
 		return
@@ -258,7 +256,6 @@ func (p *Plugin) handleStartMeeting(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := r.Header.Get(mattermostUserIDHeader)
-
 	if userID == "" {
 		http.Error(w, "Not authorized", http.StatusUnauthorized)
 		return

@@ -121,13 +121,13 @@ export function sendEphemeralPost(message: string, channelID: string, userID: st
             create_at: timestamp,
             update_at: timestamp
         };
+
         dispatch({
             type: PostTypes.RECEIVED_NEW_POST,
             data: post,
             channelID
         });
-        return {
-            data: post
-        };
+
+        return {data: post};
     };
 }

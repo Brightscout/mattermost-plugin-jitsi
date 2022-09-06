@@ -15,7 +15,8 @@ export type GlobalState = ReduxGlobalState & {
             embedded?: boolean,
             /* eslint-disable camelcase */
             naming_scheme?: 'ask' | 'words' | 'mattermost' | 'uuid',
-            use_jaas?: boolean /* eslint-enable camelcase */
+            use_jaas?: boolean
+            /* eslint-enable camelcase */
         }
     }
 }

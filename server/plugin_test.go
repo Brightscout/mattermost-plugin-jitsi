@@ -51,9 +51,7 @@ func TestSignClaims(t *testing.T) {
 func TestStartMeeting(t *testing.T) {
 	p := Plugin{
 		configuration: &configuration{
-			JitsiSettings: jitsisettings{
-				JitsiURL: "http://test",
-			},
+			JitsiURL: "http://test",
 		},
 	}
 	apiMock := plugintest.API{}
