@@ -49,13 +49,25 @@ func (p *Plugin) InitAPI() *mux.Router {
 	apiRouter := r.PathPrefix("/api/v1").Subrouter()
 
 	r.HandleFunc("/jitsi_meet_external_api.js", p.handleExternalAPIjs)
-	apiRouter.HandleFunc("/meetings/enrich", p.handleEnrichMeetingJwt).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/meetings", p.handleStartMeeting).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/config", p.handleConfig).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/meetings/enrich", p.checkAuth(p.handleEnrichMeetingJwt)).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/meetings", p.checkAuth(p.handleStartMeeting)).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/config", p.checkAuth(p.handleConfig)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/meetings/jaas/settings", p.handleJaaSSettings)
 	r.HandleFunc("{anything:.*}", http.NotFound)
 
 	return r
+}
+
+func (p *Plugin) checkAuth(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		mattermostUserID := r.Header.Get(mattermostUserIDHeader)
+		if mattermostUserID == "" {
+			http.Error(w, "Not authorized", http.StatusUnauthorized)
+			return
+		}
+
+		handler(w, r)
+	}
 }
 
 func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
@@ -124,10 +136,6 @@ func (p *Plugin) isJaaSMeeting(path string) bool {
 
 func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get(mattermostUserIDHeader)
-	if userID == "" {
-		http.Error(w, "Not authorized", http.StatusUnauthorized)
-		return
-	}
 
 	config, err := p.getUserConfig(userID)
 	if err != nil {
@@ -256,10 +264,6 @@ func (p *Plugin) handleStartMeeting(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := r.Header.Get(mattermostUserIDHeader)
-	if userID == "" {
-		http.Error(w, "Not authorized", http.StatusUnauthorized)
-		return
-	}
 
 	user, appErr := p.API.GetUser(userID)
 	if appErr != nil {
@@ -364,10 +368,6 @@ func (p *Plugin) handleEnrichMeetingJwt(w http.ResponseWriter, r *http.Request) 
 	}
 
 	userID := r.Header.Get(mattermostUserIDHeader)
-	if userID == "" {
-		http.Error(w, "Not authorized", http.StatusUnauthorized)
-		return
-	}
 
 	var req EnrichMeetingJwtRequest
 

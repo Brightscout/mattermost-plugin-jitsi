@@ -3,7 +3,7 @@ import React from 'react';
 import {FormattedMessage} from 'react-intl';
 import {Post} from 'mattermost-redux/types/posts';
 import Constants from 'mattermost-redux/constants/general';
-import {checkMeetingLinkServerType} from 'utils/user_utils';
+import {isMeetingLinkServerTypeJaaS} from 'utils/user_utils';
 import constants from '../../constants';
 
 const BORDER_SIZE = 8;
@@ -200,7 +200,7 @@ export default class Conference extends React.PureComponent<Props, State> {
     }
 
     openInNewTab = (meetingLink: string) => {
-        if (checkMeetingLinkServerType(meetingLink, this.props.useJaas)) {
+        if (isMeetingLinkServerTypeJaaS(meetingLink, this.props.useJaas)) {
             this.props.actions.sendEphemeralPost(this.props.isCurrentUserSysAdmin ? constants.JAAS_ADMIN_EPHEMERAL_MESSAGE : constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUserId);
         } else {
             window.open(meetingLink, '_blank');

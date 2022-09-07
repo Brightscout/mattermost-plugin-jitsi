@@ -22,8 +22,8 @@ export function displayUsernameForUser(user: UserProfile | null, config: Config)
 
     return '';
 }
-// checkMeetingLinkServerType is checking whether meetingLink is using Jaas as it's server type or not
-export function checkMeetingLinkServerType(meetingLink:string, useJass:boolean): boolean {
+// isMeetingLinkServerTypeJaaS is checking whether meetingLink is using Jaas as its server type or not
+export function isMeetingLinkServerTypeJaaS(meetingLink:string, useJass:boolean): boolean {
     const meetingURL = new URL(meetingLink);
     const meetingId = meetingURL.searchParams.get(constants.MEETING_ID);
     var regex = new RegExp(MEETING_ID_REGEX);

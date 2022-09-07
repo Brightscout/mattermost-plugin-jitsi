@@ -450,7 +450,7 @@ func (p *Plugin) startMeeting(user *model.User, channel *model.Channel, meetingI
 	meetingUntil := ""
 
 	if p.getConfiguration().UseJaaS {
-		meetingURL = strings.TrimSpace(*p.API.GetConfig().ServiceSettings.SiteURL + "/plugins/jitsi/public/jaas/jaas.html")
+		meetingURL = strings.TrimRight(strings.TrimSpace(*p.API.GetConfig().ServiceSettings.SiteURL+"/plugins/jitsi/public/jaas/jaas.html"), "/")
 		meetingURL = meetingURL + "?meetingID=" + meetingID
 		meetingLink = meetingURL
 

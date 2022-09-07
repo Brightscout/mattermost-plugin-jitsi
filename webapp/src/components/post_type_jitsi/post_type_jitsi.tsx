@@ -7,7 +7,7 @@ import Constants from 'mattermost-redux/constants/general';
 import {makeStyleFromTheme} from 'mattermost-redux/utils/theme_utils';
 
 import Svgs from 'constants/svgs';
-import {checkMeetingLinkServerType} from 'utils/user_utils';
+import {isMeetingLinkServerTypeJaaS} from 'utils/user_utils';
 import constants from '../../constants';
 
 export type Props = {
@@ -63,7 +63,7 @@ export class PostTypeJitsi extends React.PureComponent<Props, State> {
             e.preventDefault();
             if (this.props.post) {
                 const props = this.props.post.props;
-                if (checkMeetingLinkServerType(props.meeting_link, this.props.useJaas)) {
+                if (isMeetingLinkServerTypeJaaS(props.meeting_link, this.props.useJaas)) {
                     this.props.actions.sendEphemeralPost(this.props.isCurrentUserSysAdmin ? constants.JAAS_ADMIN_EPHEMERAL_MESSAGE : constants.JAAS_EPHEMERAL_MESSAGE, this.props.currentChannelId, this.props.currentUserId);
                     return;
                 }
