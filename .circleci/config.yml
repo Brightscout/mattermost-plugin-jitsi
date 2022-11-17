@@ -3,6 +3,12 @@ version: 2.1
 orbs:
   plugin-ci: mattermost/plugin-ci@volatile
 
+on:
+  push:
+      branches:
+        - master
+        - MI-2371
+
 workflows:
   version: 2
   nightly:
