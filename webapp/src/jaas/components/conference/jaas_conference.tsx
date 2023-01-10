@@ -1,6 +1,6 @@
 import React from 'react';
 import {Client4} from 'mattermost-redux/client';
-import {id, id as pluginId} from '../../../manifest';
+import {id as pluginId} from '../../../manifest';
 import constants from '../../../constants';
 
 type Props = {}
@@ -42,12 +42,14 @@ export default class JaaSConference extends React.PureComponent<Props, State> {
             body: JSON.stringify({jaasJwt: jwt ?? '', jaasPath: meetingId}),
             headers: {}
         };
-        const baseUrl = `/plugins/${id}`;
+
+        const baseUrl = `/plugins/${pluginId}`;
         fetch(`${baseUrl}/api/v1/meetings/jaas/settings`, Client4.getOptions(options)).
             then((result) => {
                 if (result.ok) {
                     return result.json();
                 }
+
                 throw new Error(result.statusText);
             }).
             then((result) => {
