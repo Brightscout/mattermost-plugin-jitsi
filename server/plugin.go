@@ -729,6 +729,8 @@ func (p *Plugin) getUserConfig(userID string) (*UserConfig, error) {
 		return nil, err
 	}
 
+	userConfig.UseJaas = p.getConfiguration().UseJaaS
+
 	return &userConfig, nil
 }
 
