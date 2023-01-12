@@ -1,8 +1,8 @@
 import React, {useEffect} from 'react';
 import {useDispatch} from 'react-redux';
-import {loadConfig} from '../src/actions';
+import {loadConfig} from './actions';
 
-const GetConfig = (): React.ReactNode => {
+const App = (): React.ReactNode => {
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -13,4 +13,4 @@ const GetConfig = (): React.ReactNode => {
     return null;
 };
 
-export default GetConfig;
+export default App;

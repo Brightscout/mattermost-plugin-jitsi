@@ -730,7 +730,6 @@ func (p *Plugin) getUserConfig(userID string) (*UserConfig, error) {
 	}
 
 	userConfig.UseJaas = p.getConfiguration().UseJaaS
-
 	return &userConfig, nil
 }
 
